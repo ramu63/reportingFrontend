@@ -79,6 +79,30 @@ function Reports() {
     }
   ]);
   const [selectedTimezone, setSelectedTimezone] = useState("UTC");
+  const [selectedAccount, setSelectedAccount] = useState("876416714169756");
+  const [accounts, setAccounts] = useState([
+
+    {
+      "label": "876416714169756",
+      "value": "876416714169756"
+    },
+    {
+      "label": "1804191106695452",
+      "value": "1804191106695452"
+    },
+    {
+      "label": "317507598007097",
+      "value": "317507598007097"
+    },
+    {
+      "label": "686652410128553",
+      "value": "686652410128553"
+    },
+    {
+      "label": "291913597326953",
+      "value": "291913597326953"
+    }
+  ]);
   const dateFormat = 'YYYY-MM-DD';
 
   function calculateDaysAgo(date, timezone) {
@@ -95,14 +119,14 @@ function Reports() {
     const getData = async()=>{
       const daysAgo = calculateDaysAgo(startDate, selectedTimezone);
       // console.log("datass", daysAgo)
-      const data = await axios.get(`http://reportingads-env-1.eba-brhyrmfa.ap-south-1.elasticbeanstalk.com/getFilteredData?day=${daysAgo}&accountIdFB=876416714169756&timezone=${selectedTimezone}`)
+      const data = await axios.get(`http://reportingnew-env.eba-uypqi233.ap-south-1.elasticbeanstalk.com/getFilteredData?day=${daysAgo}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
       console.log("data", data.data.returnedRecords)
       setData([...data.data.returnedRecords])
 
 
     }
     getData()
-  },[startDate,selectedTimezone])
+  },[startDate,selectedTimezone,selectedAccount])
 
   function spender(values) {
     let totalSpend = 0;
@@ -315,6 +339,21 @@ const rpcFormula = (params) => {
         <div>
           <Space style={{ display: "flex", justifyContent: "flex-end" }}>
             
+          <Select
+              showSearch
+              allowClear
+              placeholder="Select Account"
+              optionFilterProp="children"
+              style={{ width: "12em" }}
+              onChange={(value) => {
+                 setSelectedAccount(value);
+                
+              }}
+              
+              options={accounts}
+
+              value={selectedAccount}
+            />
 
             <Select
               showSearch
