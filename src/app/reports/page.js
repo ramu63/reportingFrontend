@@ -119,7 +119,7 @@ function Reports() {
     const getData = async()=>{
       const daysAgo = calculateDaysAgo(startDate, selectedTimezone);
       // console.log("datass", daysAgo)
-      const data = await axios.get(`http://reportingnew-env.eba-uypqi233.ap-south-1.elasticbeanstalk.com/getFilteredData?day=${daysAgo}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
+      const data = await axios.get(`https://reportingads.net/getFilteredData?day=${daysAgo}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
       console.log("data", data.data.returnedRecords)
       setData([...data.data.returnedRecords])
 
