@@ -39,11 +39,11 @@ const SideBar = ({ children }) => {
       <Sider trigger={null} collapsible collapsed={collapsed}>
         <div className="demo-logo-vertical" />
         <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-          <Menu.Item key="1" icon={<UserOutlined />}>
+          <Menu.Item key="1" icon={<UserOutlined /> }>
             <Link href="/">Home</Link>
           </Menu.Item>
           <Menu.Item key="2" icon={<VideoCameraOutlined />}>
-            <Link href="reports/">About</Link>
+            <Link href="reports/">Reports</Link>
           </Menu.Item>
           <Menu.Item key="3" icon={<UploadOutlined />}>
             <Link href="reports/">Contact</Link>
@@ -67,11 +67,13 @@ const SideBar = ({ children }) => {
               height: 64,
             }}
           />
+          
+         
         </Header>
         <Content
           style={{
-            margin: '24px 16px',
-            padding: 24,
+            margin: '10px 0px',
+            padding: 5,
             minHeight: viewportHeight - 110, // Adjust as needed based on your layout
             height: '100%', // Ensure Content takes full height of parent Layout
             background: colorBgContainer,
