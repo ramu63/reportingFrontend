@@ -3,7 +3,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
-import { DatePicker, Select, Space } from "antd";
+import { DatePicker, Select, Space, Spin } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import moment from "moment-timezone";
@@ -14,7 +14,10 @@ import { useEffect, useMemo, useState } from "react";
 function Reports() {
 
   const [data, setData] = useState([])
-  const [startDate, setStartDate] = useState(moment().tz("Asia/Kolkata").format("YYYY-MM-DD"));
+  const [dates, setDates] = useState([
+    moment().tz("Asia/Kolkata").format("YYYY-MM-DD"),
+    moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
+  ]);
   const [timeZones, setTimeZones] = useState(
     [
     {
@@ -104,6 +107,35 @@ function Reports() {
     }
   ]);
   const dateFormat = 'YYYY-MM-DD';
+  const { RangePicker } = DatePicker;
+  const [loader, setLoader] = useState(false)
+
+
+  const onRangeChange = (dates,dateStrings) => {
+    if (dateStrings) {
+      setDates([dateStrings[0],dateStrings[1]]);
+    } else {
+      console.log('Clear');
+    }
+  };
+  const rangePresets = [
+    {
+      label: 'Last 7 Days',
+      value: [dayjs().add(-7, 'd'), dayjs()],
+    },
+    {
+      label: 'Last 14 Days',
+      value: [dayjs().add(-14, 'd'), dayjs()],
+    },
+    {
+      label: 'Last 30 Days',
+      value: [dayjs().add(-30, 'd'), dayjs()],
+    },
+    {
+      label: 'Last 90 Days',
+      value: [dayjs().add(-90, 'd'), dayjs()],
+    },
+  ];
 
   function calculateDaysAgo(date, timezone) {
     // Parse the date in the given timezone
@@ -115,18 +147,32 @@ function Reports() {
     return daysDiff;
   }
 
+  // useEffect(()=>{
+  //   const getData = async()=>{
+  //     const daysAgo = calculateDaysAgo(startDate, selectedTimezone);
+  //     // console.log("datass", daysAgo)
+  //     const data = await axios.get(`https://reportingads.net/getFilteredData?day=${daysAgo}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
+  //     console.log("data", data.data.returnedRecords)
+  //     setData([...data.data.returnedRecords])
+
+
+  //   }
+  //   getData()
+  // },[startDate,selectedTimezone,selectedAccount])
+
   useEffect(()=>{
     const getData = async()=>{
-      const daysAgo = calculateDaysAgo(startDate, selectedTimezone);
+      // const daysAgo = calculateDaysAgo(startDate, selectedTimezone);
       // console.log("datass", daysAgo)
-      const data = await axios.get(`https://reportingads.net/getFilteredData?day=${daysAgo}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
+      setLoader(true)
+      const data = await axios.get(`https://reportingads.net/getFilteredDataRange?dateStart=${dates[0]}&dateEnd=${dates[1]}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
       console.log("data", data.data.returnedRecords)
       setData([...data.data.returnedRecords])
-
+      setLoader(false)
 
     }
     getData()
-  },[startDate,selectedTimezone,selectedAccount])
+  },[dates,selectedTimezone,selectedAccount])
 
   function spender(values) {
     let totalSpend = 0;
@@ -256,11 +302,11 @@ const rpcFormula = (params) => {
 
 
   const columnDefs = [
-    { headerName: "Campaign Name", field: "campaignName", sortable: true, filter: true, rowGroup: true, width: 300, floatingFilter: true },
-    { headerName: "Campaign ID", field: "campaignId", sortable: true, filter: true,  width: 200},
+    { headerName: "Campaign Name", field: "campaignName", sortable: true, filter: true, rowGroup: true, width: 300, floatingFilter: true, enableRowGroup: true },
+    { headerName: "Campaign ID", field: "campaignId", sortable: true, filter: true,  width: 200,enableRowGroup: true},
     // { headerName: "Adset Name", field: "adsetName", sortable: true, filter: true,  width: 300},
-    { headerName: "Adset ID", field: "adsetId", sortable: true, filter: true,  width: 200},
-    { headerName: "Hour", field: "convertedHour", sortable: true, filter: true, width: 80 },
+    { headerName: "Adset ID", field: "adsetId", sortable: true, filter: true,  width: 200,enableRowGroup: true},
+    { headerName: "Hour", field: "convertedHour", sortable: true, filter: true, width: 80, enableRowGroup: true},
     { headerName: "Spend", field: "spend", sortable: true, filter: true, width: 100, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2))},
     { headerName: "Revenue", field: "revenue", sortable: true, filter: true, width: 110, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2))},
     { headerName: "Profit", field: "profit", sortable: true, filter: true, width: 110, valueGetter: profitFormula },
@@ -272,7 +318,8 @@ const rpcFormula = (params) => {
     // { headerName: "Date", field: "convertedDate", sortable: true, filter: true },
     { headerName: "CPL", field: "cpl", sortable: true, filter: true, width: 90, valueGetter:cplFormula},
     { headerName: "CPC", field: "cpc", sortable: true, filter: true, width: 90, valueGetter:cpcFormula},
-    { headerName: "RPC", field: "rpc", sortable: true, filter: true, width: 90, valueGetter:rpcFormula}
+    { headerName: "RPC", field: "rpc", sortable: true, filter: true, width: 90, valueGetter:rpcFormula},
+    { headerName: "Date", field: "convertedDate", sortable: true, filter: true, enableRowGroup: true}
 
 
   ];
@@ -330,14 +377,20 @@ const rpcFormula = (params) => {
 
   const pinnedBottomRowData = useMemo(() => getPinnedBottomRowData(data), [data]);
 
-
+  const gridOptions = {
+    // rowDragManaged: true,
+    // enableSorting: true,
+    // enableFilter: true,
+    rowGroupPanelShow: 'always', // Show row group panel always visible
+  };
+  
   return (
    <div>
-     <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "20px" }}>
+     <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px" }}>
         <div>
         </div>
         <div>
-          <Space style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Space style={{ display: "flex", justifyContent: "flex-end" , margin: "10px 10px 0px 0px"}}>
             
           <Select
               showSearch
@@ -375,7 +428,8 @@ const rpcFormula = (params) => {
               value={selectedTimezone}
             />
 
-            <DatePicker onChange={onChange} defaultValue={dayjs(startDate, dateFormat)}/>
+            {/* <DatePicker onChange={onChange} defaultValue={dayjs(startDate, dateFormat)}/> */}
+            <RangePicker presets={rangePresets} onChange={onRangeChange} />
             {/* <Button onClick={callChildMethod}>Export CSV</Button> */}
             {/* <Button onClick={refreshTable}>
               <SyncOutlined />
@@ -386,9 +440,11 @@ const rpcFormula = (params) => {
       <div className={
          "ag-theme-quartz-dark"
         }
-        style={{ height: "75vh", marginTop: "2em" }}>
+        style={{ height: "80vh", marginTop: "1em" }}>
 
-      <AgGridReact
+      {loader?
+       <Spin size="large" style={{height: "40vh", marginTop: "1em" ,display: "flex", justifyContent: "center", alignItems: "center"}}/>
+      :<AgGridReact
             // ref={gridRef}
             // onGridReady={onGridReady}
             rowData={data}
@@ -401,6 +457,7 @@ const rpcFormula = (params) => {
             groupIncludeTotalFooter={true}
             pinnedBottomRowData={pinnedBottomRowData}
             animateRows={true}
+            gridOptions={gridOptions}
             // defaultColDef={defaultColDef}
             // getRowStyle={getRowStyle}
             // getGroupRowAgg={getGroupRowAgg}
@@ -408,7 +465,7 @@ const rpcFormula = (params) => {
             // enableRangeSelection={true}
             // pinnedBottomRowData={pinnedBottomRowData}
             // getContextMenuItems={getContextMenuItems}
-          />
+          />}
           </div>
    </div>
   )
