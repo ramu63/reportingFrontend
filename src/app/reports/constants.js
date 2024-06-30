@@ -1,274 +1,190 @@
-import dayjs from "dayjs";
-import { dollarFormatter, percentageFormatter, valueFormatter } from "./utils";
-export const thisMonthStartDate = dayjs().startOf("month");
-export const thisMonthEndDate = dayjs().endOf("day");
+function spender(values) {
+  let totalSpend = 0;
+  values.values.forEach(value => {
+      totalSpend += value;
+  });
+  return totalSpend;
+}
 
-export const lastMonthStartDate = dayjs().subtract(1, "month").startOf("month");
-export const lastMonthEndDate = dayjs().subtract(1, "month").endOf("month");
+const marginFormula = (params) => {
+const calculateMargin = (revenue, spend) => {
+  let margin = 0;
+  if (spend !== 0) {
+    margin = ((revenue - spend) / spend) * 100;
+  }
+  const marginStr = margin.toFixed(2);
+  const [intPart, decPart] = marginStr.split(".");
+  return decPart === "00" ? intPart : marginStr;
+};
 
-export const TODAY = dayjs().format("YYYY-MM-DD");
-export const YESTERDAY = dayjs().subtract(1, "days").format("YYYY-MM-DD");
+if (params.data !== undefined) {
+  const spend = params.data.spend || 0;
+  const revenue = params.data.revenue || 0;
+  return calculateMargin(revenue, spend);
+}
 
-export const ONE_MONTH_AGO = dayjs().subtract(1, "month").format("YYYY-MM-DD");
+if (params.node.aggData !== undefined) {
+  const { revenue, spend } = params.node.aggData;
+  return calculateMargin(revenue, spend);
+}
 
-export const TabItemList = [
-  {
-    label: "Feed",
-    key: "revenuePartner",
-  },
-  {
-    label: "Platform",
-    key: "spendPartner",
-  },
-  {
-    label: "Media Buyer",
-    key: "mediaBuyerName",
-  },
-  {
-    label: "Daily",
-    key: "daily",
-  },
-];
+};
 
-export const rangePresets = [
-  {
-    label: "Today",
-    value: [dayjs().add(0, "d"), dayjs()],
-  },
-  {
-    label: "Yesterday",
-    value: [dayjs().add(-1, "d"), dayjs().add(-1, "d")],
-  },
-  {
-    label: "Last 7 Days",
-    value: [dayjs().add(-7, "d"), dayjs()],
-  },
-  {
-    label: "Last 14 Days",
-    value: [dayjs().add(-14, "d"), dayjs()],
-  },
-  {
-    label: "Last 30 Days",
-    value: [dayjs().add(-30, "d"), dayjs()],
-  },
-  {
-    label: "Last 90 Days",
-    value: [dayjs().add(-90, "d"), dayjs()],
-  },
-  {
-    label: "This Month",
-    value: [thisMonthStartDate, thisMonthEndDate],
-  },
-  {
-    label: "Last Month",
-    value: [lastMonthStartDate, lastMonthEndDate],
-  },
-];
+const profitFormula = (params) => {
+const calculateProfit = (revenue, spend) => {
+  return (revenue - spend).toFixed(2);
+};
 
-export const COMMON_COL_ORDER = [
-  "key",
-  "spend",
-  "revenue",
-  "profit",
-  "roi",
-  "cplr",
-  "rpl",
-  "scpl",
-  "pctr",
-  "leads",
-  "name",
-  "cpc",
-  "spendLeads",
-  "clicks",
-  "impressions",
-];
+if (params.data !== undefined) {
+  const spend = params.data.spend || 0;
+  const revenue = params.data.revenue || 0;
+  return calculateProfit(revenue, spend);
+}
 
-export const columnDefsMap = (LinkCellRenderer) => ({
-  key: {
-    field: "key",
-    minWidth: 350,
-    filter: true,
-    cellRenderer: LinkCellRenderer,
-    icons: { menu: '<i class="fa fa-filter"></i>' },
-    menuTabs: ["filterMenuTab"],
-    pinned: "left",
-  },
-  spend: {
-    field: "spend",
-    valueFormatter: dollarFormatter,
-    aggFunc: "sum",
-    suppressMenu: true,
-  },
-  revenue: {
-    field: "revenue",
-    valueFormatter: dollarFormatter,
-    suppressMenu: true,
-  },
-  name: {
-    field: "name",
-    hide: true,
-  },
-  profit: {
-    field: "profit",
-    valueFormatter: dollarFormatter,
-    icons: { menu: '<i class="fa fa-info"></i>' },
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-  },
-  roi: {
-    headerName: "ROI",
-    field: "roi",
-    valueFormatter: percentageFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  cplr: {
-    headerName: "CPL",
-    field: "cplr",
-    valueFormatter: valueFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  scpl: {
-    headerName: 'SCPL',
-    field: 'scpl',
-    valueFormatter: valueFormatter,
-    menuTabs: ['generalMenuTab', 'filterMenuTab'],
-    icons: { menu: '<i class="fa fa-info"></i>' }
-  },
-  rpl: {
-    headerName: "RPL",
-    field: "rpl",
-    valueFormatter: valueFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  pctr: {
-    headerName: "CVR",
-    field: "pctr",
-    valueFormatter: percentageFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  leads: {
-    field: "leads",
-    suppressMenu: true,
-    menuTabs: ["filterMenuTab"],
-  },
-  cpc: {
-    headerName: "CPC",
-    field: "cpc",
-    valueFormatter: valueFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  spendLeads: {
-    field: "spendLeads",
-    suppressMenu: true,
-  },
-  clicks: {
-    field: "clicks",
-    suppressMenu: true,
-  },
-  impressions: {
-    field: "impressions",
-    suppressMenu: true,
-  },
-});
+if (params.node.aggData !== undefined) {
+  const { revenue, spend } = params.node.aggData;
+  return calculateProfit(revenue, spend);
+}
 
-export const chartColumnDefsMap = (props) => ({
-  key: {
-    field: "key",
-    minWidth: 350,
-    filter: true,
-    floatingFilter: true,
-    suppressMenu: true,
-    pinned: "left",
-    // comparator:
-    //   props.type == "daily"
-    //     ? (valueA, valueB, nodeA, nodeB, isDescending) => {
-    //         if (valueA == valueB) return 0;
-    //         return valueA > valueB ? 1 : -1;
-    //       }
-    //     : (valueA, valueB, nodeA, nodeB, isDescending) => valueA - valueB,
+};
+
+const cplFormula = (params) => {
+const calculateCPL = (spend, leads) => {
+  let cpl = leads !== 0 ? spend / leads : 0;
+  if (!isFinite(cpl) || isNaN(cpl)) {
+    cpl = 0;
+  }
+  const cplStr = cpl.toFixed(2);
+  const [intPart, decPart] = cplStr.split(".");
+  return decPart === "00" ? intPart : cplStr;
+};
+
+if (params.data) {
+  const spend = params.data.spend || 0;
+  const leads = params.data.leads || 0;
+  return calculateCPL(spend, leads);
+}
+
+if (params.node.aggData) {
+  const { spend, leads } = params.node.aggData;
+  return calculateCPL(spend, leads);
+}
+
+};
+
+const cpcFormula = (params) => {
+const calculateCPC = (spend, clicks) => {
+  let cpc = clicks !== 0 ? spend / clicks : 0;
+  if (!isFinite(cpc) || isNaN(cpc)) {
+    cpc = 0;
+  }
+  const cpcStr = cpc.toFixed(2);
+  const [intPart, decPart] = cpcStr.split(".");
+  return decPart === "00" ? intPart : cpcStr;
+};
+
+if (params.data) {
+  const spend = params.data.spend || 0;
+  const clicks = params.data.clicks || 0;
+  return calculateCPC(spend, clicks);
+}
+
+if (params.node.aggData) {
+  const { spend, clicks } = params.node.aggData;
+  return calculateCPC(spend, clicks);
+}
+
+};
+
+const rpcFormula = (params) => {
+const calculateRPC = (revenue, conversions) => {
+  let rpc = conversions !== 0 ? revenue / conversions : 0;
+  if (!isFinite(rpc) || isNaN(rpc)) {
+    rpc = 0;
+  }
+  const rpcStr = rpc.toFixed(2);
+  const [intPart, decPart] = rpcStr.split(".");
+  return decPart === "00" ? intPart : rpcStr;
+};
+
+if (params.data) {
+  const revenue = params.data.revenue || 0;
+  const conversions = params.data.conversions || 0;
+  return calculateRPC(revenue, conversions);
+}
+
+if (params.node.aggData) {
+  const { revenue, conversions } = params.node.aggData;
+  return calculateRPC(revenue, conversions);
+}
+
+};
+
+export const autoGroupColumnDef = {
+  headerName: "Group",
+  minWidth: 200,
+  width: 500,
+ cellRendererParams: {
+  suppressCount: false,
+}
+};
+
+export const gridOptions = {
+  rowGroupPanelShow: 'always',
+};
+
+export const columnDefsLiveReport = [
+    { headerName: "Campaign Name", field: "campaignName", sortable: true, filter: true, rowGroup: true, width: 300, floatingFilter: true, enableRowGroup: true },
+    { headerName: "Campaign ID", field: "campaignId", sortable: true, filter: true,  width: 200,enableRowGroup: true},
+    { headerName: "Adset ID", field: "adsetId", sortable: true, filter: true,  width: 200,enableRowGroup: true},
+    { headerName: "Hour", field: "convertedHour", sortable: true, filter: true, width: 80, enableRowGroup: true},
+    { headerName: "Spend", field: "spend", sortable: true, filter: true, width: 100, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2))},
+    { headerName: "Revenue", field: "revenue", sortable: true, filter: true, width: 110, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2))},
+    { headerName: "Profit", field: "profit", sortable: true, filter: true, width: 110, valueGetter: profitFormula },
+    { headerName: "Margin(%)", field: "margin", sortable: true, filter: true, width: 120, valueGetter:marginFormula,
+    comparator: (a, b, isDescending) => {
+      const a_ = a.replace("%", "");
+      const b_ = b.replace("%", "");
+      if (isDescending) {
+        return b_ - a_;
+      }
+    }
   },
-  spend: {
-    field: "spend",
-    valueFormatter: dollarFormatter,
-    aggFunc: "sum",
-    suppressMenu: true,
+    { headerName: "Impressions", field: "impressions", sortable: true, filter: true, width: 130, aggFunc: spender},
+    { headerName: "Clicks", field: "clicks", sortable: true, filter: true, width: 90, aggFunc: spender},
+    { headerName: "Leads", field: "leads", sortable: true, filter: true, width: 90, aggFunc: spender},
+    { headerName: "Conversions", field: "conversions", sortable: true, filter: true,width: 130,aggFunc: spender},
+    { headerName: "CPL", field: "cpl", sortable: true, filter: true, width: 90, valueGetter:cplFormula},
+    { headerName: "CPC", field: "cpc", sortable: true, filter: true, width: 90, valueGetter:cpcFormula},
+    { headerName: "RPC", field: "rpc", sortable: true, filter: true, width: 90, valueGetter:rpcFormula},
+    { headerName: "Date", field: "convertedDate", sortable: true, filter: true, enableRowGroup: true}
+
+  ];
+
+  export const columnDefsUserReport = [
+    { headerName: "MediaBuyer", field: "media_buyer", sortable: true, filter: true, rowGroup: true, width: 300, floatingFilter: true, enableRowGroup: true },
+    { headerName: "AccountId", field: "accountId", sortable: true, filter: true, width: 300, floatingFilter: true, enableRowGroup: true },
+    { headerName: "Spend", field: "spend", sortable: true, filter: true, width: 100, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2))},
+    { headerName: "Revenue", field: "revenue", sortable: true, filter: true, width: 110, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2))},
+    { headerName: "Profit", field: "profit", sortable: true, filter: true, width: 110, valueGetter: profitFormula },
+    { headerName: "Margin(%)", field: "margin", sortable: true, filter: true, width: 120, valueGetter:marginFormula,
+    comparator: (a, b, isDescending) => {
+      const a_ = a.replace("%", "");
+      const b_ = b.replace("%", "");
+      if (isDescending) {
+        return b_ - a_;
+      }
+    }
   },
-  revenue: {
-    field: "revenue",
-    valueFormatter: dollarFormatter,
-    suppressMenu: true,
-  },
-  profit: {
-    field: "profit",
-    valueFormatter: dollarFormatter,
-    icons: { menu: '<i class="fa fa-info"></i>' },
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-  },
-  roi: {
-    headerName: "ROI",
-    field: "roi",
-    valueFormatter: percentageFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  name: {
-    field: "name",
-    hide: true,
-  },
-  cplr: {
-    headerName: "CPL",
-    field: "cplr",
-    valueFormatter: valueFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  scpl: {
-    headerName: 'SCPL',
-    field: 'scpl',
-    valueFormatter: valueFormatter,
-    menuTabs: ['generalMenuTab', 'filterMenuTab'],
-    icons: { menu: '<i class="fa fa-info"></i>' }
-  },
-  rpl: {
-    headerName: "RPL",
-    field: "rpl",
-    valueFormatter: valueFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  pctr: {
-    headerName: "CVR",
-    field: "pctr",
-    valueFormatter: percentageFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  leads: {
-    field: "leads",
-    suppressMenu: true,
-    menuTabs: ["filterMenuTab"],
-  },
-  cpc: {
-    headerName: "CPC",
-    field: "cpc",
-    valueFormatter: valueFormatter,
-    menuTabs: ["generalMenuTab", "filterMenuTab"],
-    icons: { menu: '<i class="fa fa-info"></i>' },
-  },
-  spendLeads: {
-    field: "spendLeads",
-    suppressMenu: true,
-  },
-  clicks: {
-    field: "clicks",
-    suppressMenu: true,
-  },
-  impressions: {
-    field: "impressions",
-    suppressMenu: true,
-  },
-});
+    { headerName: "Impressions", field: "impressions", sortable: true, filter: true, width: 130, aggFunc: spender},
+    { headerName: "Clicks", field: "clicks", sortable: true, filter: true, width: 90, aggFunc: spender},
+    { headerName: "Leads", field: "leads", sortable: true, filter: true, width: 90, aggFunc: spender},
+    { headerName: "Conversions", field: "conversions", sortable: true, filter: true,width: 130,aggFunc: spender},
+    { headerName: "CPL", field: "cpl", sortable: true, filter: true, width: 90, valueGetter:cplFormula},
+    { headerName: "CPC", field: "cpc", sortable: true, filter: true, width: 90, valueGetter:cpcFormula},
+    { headerName: "RPC", field: "rpc", sortable: true, filter: true, width: 90, valueGetter:rpcFormula},
+    // { headerName: "Date", field: "convertedDate", sortable: true, filter: true, enableRowGroup: true}
+
+  ];
+
+  
