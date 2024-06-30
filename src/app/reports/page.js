@@ -3,16 +3,19 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
-import { DatePicker, Select, Space, Spin } from "antd";
+import { Button, DatePicker, Select, Space, Spin, Switch } from "antd";
 import axios from "axios";
 import dayjs from "dayjs";
 import moment from "moment-timezone";
 import { useEffect, useMemo, useState } from "react";
-// const { RangePicker } = DatePicker;
-
+// import { autoGroupColumnDef, columnDefs, gridOptions } from "./constants";
+import {
+  SyncOutlined
+} from '@ant-design/icons';
+import { autoGroupColumnDef, columnDefsLiveReport, columnDefsUserReport, gridOptions } from "./constants";
 
 function Reports() {
-
+// console.log("states", columnDefs,autoGroupColumnDef)
   const [data, setData] = useState([])
   const [dates, setDates] = useState([
     moment().tz("Asia/Kolkata").format("YYYY-MM-DD"),
@@ -84,7 +87,10 @@ function Reports() {
   const [selectedTimezone, setSelectedTimezone] = useState("UTC");
   const [selectedAccount, setSelectedAccount] = useState("876416714169756");
   const [accounts, setAccounts] = useState([
-
+    {
+      "label": "ALL",
+      "value": "ALL"
+    },
     {
       "label": "876416714169756",
       "value": "876416714169756"
@@ -106,18 +112,51 @@ function Reports() {
       "value": "291913597326953"
     }
   ]);
-  const dateFormat = 'YYYY-MM-DD';
+  const [networks, setNetworks] = useState([
+
+    {
+      "label": "MEDIA_DOT_NET",
+      "value": "MEDIA_DOT_NET"
+    },
+    {
+      "label": "RSOC",
+      "value": "RSOC"
+    }
+  ]);
+  const [reportType, setReportType] = useState([
+
+    {
+      "label": "LIVE",
+      "value": "LIVE"
+    },
+    {
+      "label": "USER",
+      "value": "USER"
+    }
+    // ,
+    // {
+    //   "label": "MISC",
+    //   "value": "MISC"
+    // }
+  ]);
+  
   const { RangePicker } = DatePicker;
   const [loader, setLoader] = useState(false)
+  const [filters, setFilters] = useState({
+    network: "",
+    accountId: "ALL",
+    reportType: "USER",
+    timezone: "UTC",
+    dates: [
+      moment().tz("Asia/Kolkata").format("YYYY-MM-DD"),
+      moment().tz("Asia/Kolkata").format("YYYY-MM-DD")
+    ]
+  })
+  const [mode, setMode] = useState("light")
+  const [refresh, setRefresh] = useState(false)
 
 
-  const onRangeChange = (dates,dateStrings) => {
-    if (dateStrings) {
-      setDates([dateStrings[0],dateStrings[1]]);
-    } else {
-      console.log('Clear');
-    }
-  };
+
   const rangePresets = [
     {
       label: 'Last 7 Days',
@@ -137,205 +176,37 @@ function Reports() {
     },
   ];
 
-  function calculateDaysAgo(date, timezone) {
-    // Parse the date in the given timezone
-    const givenDate = moment.tz(date, timezone).startOf('day');
-    // Get today's date in the given timezone
-    const today = moment.tz(timezone).startOf('day');
-    // Calculate the difference in days
-    const daysDiff = today.diff(givenDate, 'days');
-    return daysDiff;
-  }
-
   // useEffect(()=>{
   //   const getData = async()=>{
-  //     const daysAgo = calculateDaysAgo(startDate, selectedTimezone);
-  //     // console.log("datass", daysAgo)
-  //     const data = await axios.get(`https://reportingads.net/getFilteredData?day=${daysAgo}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
+  //     setLoader(true)
+  //     const data = await axios.get(`http://localhost:8000/getFilteredDataRange?dateStart=${dates[0]}&dateEnd=${dates[1]}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
   //     console.log("data", data.data.returnedRecords)
   //     setData([...data.data.returnedRecords])
-
+  //     setLoader(false)
 
   //   }
   //   getData()
-  // },[startDate,selectedTimezone,selectedAccount])
+  // },[dates,selectedTimezone,selectedAccount, refresh])
 
   useEffect(()=>{
     const getData = async()=>{
-      // const daysAgo = calculateDaysAgo(startDate, selectedTimezone);
-      // console.log("datass", daysAgo)
       setLoader(true)
-      const data = await axios.get(`https://reportingads.net/getFilteredDataRange?dateStart=${dates[0]}&dateEnd=${dates[1]}&accountIdFB=${selectedAccount}&timezone=${selectedTimezone}`)
+      const filtersModified = JSON.stringify(filters)
+      const data = await axios.get(`https://reportingads.net/getFilteredDataReport?filters=${filtersModified}`)
       console.log("data", data.data.returnedRecords)
       setData([...data.data.returnedRecords])
       setLoader(false)
 
     }
     getData()
-  },[dates,selectedTimezone,selectedAccount])
+  },[filters, refresh])
 
-  function spender(values) {
-    let totalSpend = 0;
-    values.values.forEach(value => {
-        totalSpend += value;
-    });
-    return totalSpend;
-}
-  
-const marginFormula = (params) => {
-  const calculateMargin = (revenue, spend) => {
-    let margin = 0;
-    if (spend !== 0) {
-      margin = ((revenue - spend) / spend) * 100;
-    }
-    const marginStr = margin.toFixed(2);
-    const [intPart, decPart] = marginStr.split(".");
-    return decPart === "00" ? intPart : marginStr;
-  };
-
-  if (params.data !== undefined) {
-    const spend = params.data.spend || 0;
-    const revenue = params.data.revenue || 0;
-    return calculateMargin(revenue, spend);
+  const refreshData = ()=>{
+    setRefresh((prevState)=>{
+      return !prevState
+    })
   }
 
-  if (params.node.aggData !== undefined) {
-    const { revenue, spend } = params.node.aggData;
-    return calculateMargin(revenue, spend);
-  }
-
-};
-
-const profitFormula = (params) => {
-  const calculateProfit = (revenue, spend) => {
-    return (revenue - spend).toFixed(2);
-  };
-
-  if (params.data !== undefined) {
-    const spend = params.data.spend || 0;
-    const revenue = params.data.revenue || 0;
-    return calculateProfit(revenue, spend);
-  }
-
-  if (params.node.aggData !== undefined) {
-    const { revenue, spend } = params.node.aggData;
-    return calculateProfit(revenue, spend);
-  }
-
-};
-
-
-
-
-
-const cplFormula = (params) => {
-  const calculateCPL = (spend, leads) => {
-    let cpl = leads !== 0 ? spend / leads : 0;
-    if (!isFinite(cpl) || isNaN(cpl)) {
-      cpl = 0;
-    }
-    const cplStr = cpl.toFixed(2);
-    const [intPart, decPart] = cplStr.split(".");
-    return decPart === "00" ? intPart : cplStr;
-  };
-
-  if (params.data) {
-    const spend = params.data.spend || 0;
-    const leads = params.data.leads || 0;
-    return calculateCPL(spend, leads);
-  }
-
-  if (params.node.aggData) {
-    const { spend, leads } = params.node.aggData;
-    return calculateCPL(spend, leads);
-  }
-
-};
-
-const cpcFormula = (params) => {
-  const calculateCPC = (spend, clicks) => {
-    let cpc = clicks !== 0 ? spend / clicks : 0;
-    if (!isFinite(cpc) || isNaN(cpc)) {
-      cpc = 0;
-    }
-    const cpcStr = cpc.toFixed(2);
-    const [intPart, decPart] = cpcStr.split(".");
-    return decPart === "00" ? intPart : cpcStr;
-  };
-
-  if (params.data) {
-    const spend = params.data.spend || 0;
-    const clicks = params.data.clicks || 0;
-    return calculateCPC(spend, clicks);
-  }
-
-  if (params.node.aggData) {
-    const { spend, clicks } = params.node.aggData;
-    return calculateCPC(spend, clicks);
-  }
-
-};
-
-const rpcFormula = (params) => {
-  const calculateRPC = (revenue, conversions) => {
-    let rpc = conversions !== 0 ? revenue / conversions : 0;
-    if (!isFinite(rpc) || isNaN(rpc)) {
-      rpc = 0;
-    }
-    const rpcStr = rpc.toFixed(2);
-    const [intPart, decPart] = rpcStr.split(".");
-    return decPart === "00" ? intPart : rpcStr;
-  };
-
-  if (params.data) {
-    const revenue = params.data.revenue || 0;
-    const conversions = params.data.conversions || 0;
-    return calculateRPC(revenue, conversions);
-  }
-
-  if (params.node.aggData) {
-    const { revenue, conversions } = params.node.aggData;
-    return calculateRPC(revenue, conversions);
-  }
-
-};
-
-
-  const columnDefs = [
-    { headerName: "Campaign Name", field: "campaignName", sortable: true, filter: true, rowGroup: true, width: 300, floatingFilter: true, enableRowGroup: true },
-    { headerName: "Campaign ID", field: "campaignId", sortable: true, filter: true,  width: 200,enableRowGroup: true},
-    // { headerName: "Adset Name", field: "adsetName", sortable: true, filter: true,  width: 300},
-    { headerName: "Adset ID", field: "adsetId", sortable: true, filter: true,  width: 200,enableRowGroup: true},
-    { headerName: "Hour", field: "convertedHour", sortable: true, filter: true, width: 80, enableRowGroup: true},
-    { headerName: "Spend", field: "spend", sortable: true, filter: true, width: 100, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2))},
-    { headerName: "Revenue", field: "revenue", sortable: true, filter: true, width: 110, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2))},
-    { headerName: "Profit", field: "profit", sortable: true, filter: true, width: 110, valueGetter: profitFormula },
-    { headerName: "Margin(%)", field: "margin", sortable: true, filter: true, width: 120, valueGetter:marginFormula},
-    { headerName: "Impressions", field: "impressions", sortable: true, filter: true, width: 130, aggFunc: spender},
-    { headerName: "Clicks", field: "clicks", sortable: true, filter: true, width: 90, aggFunc: spender},
-    { headerName: "Leads", field: "leads", sortable: true, filter: true, width: 90, aggFunc: spender},
-    { headerName: "Conversions", field: "conversions", sortable: true, filter: true,width: 130,aggFunc: spender},
-    // { headerName: "Date", field: "convertedDate", sortable: true, filter: true },
-    { headerName: "CPL", field: "cpl", sortable: true, filter: true, width: 90, valueGetter:cplFormula},
-    { headerName: "CPC", field: "cpc", sortable: true, filter: true, width: 90, valueGetter:cpcFormula},
-    { headerName: "RPC", field: "rpc", sortable: true, filter: true, width: 90, valueGetter:rpcFormula},
-    { headerName: "Date", field: "convertedDate", sortable: true, filter: true, enableRowGroup: true}
-
-
-  ];
-  
-  const autoGroupColumnDef = {
-    headerName: "Group",
-    minWidth: 200, // Minimum width for the grouped column
-    width: 500,    // Width of the grouped column
-   cellRendererParams: {
-    suppressCount: false, // Display count in grouped cell
-  }
-  };
-
-  const onChange = (date, dateString) => {
-    setStartDate(date.format("YYYY-MM-DD"))
-  };
 
   const getPinnedBottomRowData = (data) => {
     let totalSpend = 0;
@@ -355,10 +226,6 @@ const rpcFormula = (params) => {
     });
 
 
-    // const totalCPL = totalConversions ? (totalRevenue / totalConversions).toFixed(2) : '0';
-    // const totalCPC = totalConversions ? (totalRevenue / totalConversions).toFixed(2) : '0';
-    // const totalRPC = totalConversions ? (totalRevenue / totalConversions).toFixed(2) : '0';
-
     return [{
       campaignName: 'Total',
       spend: totalSpend.toFixed(2),
@@ -368,22 +235,29 @@ const rpcFormula = (params) => {
       impressions: totalImpressions,
       leads: totalLeads,
       clicks: totalClicks,
-      conversions: totalConversions,
-      // cpl: totalCPL,
-      // cpc: totalCPC,
-      // rpc: totalRPC
+      conversions: totalConversions
     }];
   };
 
   const pinnedBottomRowData = useMemo(() => getPinnedBottomRowData(data), [data]);
 
-  const gridOptions = {
-    // rowDragManaged: true,
-    // enableSorting: true,
-    // enableFilter: true,
-    rowGroupPanelShow: 'always', // Show row group panel always visible
-  };
+ 
   
+  const onChangeFilters = (value,fieldToUpdate)=>{
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [fieldToUpdate]: value,
+    }));
+  }
+
+  const changeMode = (value)=>{
+    setMode(()=>{
+      return value===true? "light": "dark"
+    })
+    // console.log("state", value)
+    // setMode()
+  }
+  // console.log("statesof", mode)
   return (
    <div>
      <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "10px" }}>
@@ -392,79 +266,82 @@ const rpcFormula = (params) => {
         <div>
           <Space style={{ display: "flex", justifyContent: "flex-end" , margin: "10px 10px 0px 0px"}}>
             
-          <Select
+          {/* <Select
               showSearch
               allowClear
+              placeholder="Select Network"
+              optionFilterProp="children"
+              style={{ width: "12em" }}
+              onChange={(value) => onChangeFilters(value, 'network')}
+              options={networks}
+              value={filters.network}
+            /> */}
+
+          <Select
+              showSearch
+              // allowClear
               placeholder="Select Account"
               optionFilterProp="children"
               style={{ width: "12em" }}
-              onChange={(value) => {
-                 setSelectedAccount(value);
-                
-              }}
-              
+              onChange={(value) => onChangeFilters(value, 'accountId')}
               options={accounts}
-
-              value={selectedAccount}
+              value={filters.accountId}
             />
+
+<         Select
+              showSearch
+              // allowClear
+              placeholder="Select ReportType"
+              optionFilterProp="children"
+              style={{ width: "12em" }}
+              onChange={(value) => onChangeFilters(value, 'reportType')}
+              options={reportType}
+              value={filters.reportType}
+            />
+
 
             <Select
               showSearch
-              allowClear
+              // allowClear
               placeholder="UTC"
               optionFilterProp="children"
               style={{ width: "12em" }}
-              onChange={(value) => {
-                 setSelectedTimezone(value);
-                
-              }}
+              onChange={(value) => onChangeFilters(value, 'timezone')}
               filterOption={(input, option) =>
                 (option?.label ?? "")
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
               options={timeZones}
-
-              value={selectedTimezone}
+              value={filters.timezone}
             />
 
-            {/* <DatePicker onChange={onChange} defaultValue={dayjs(startDate, dateFormat)}/> */}
-            <RangePicker presets={rangePresets} onChange={onRangeChange} />
+            <RangePicker presets={rangePresets} onChange={(value,dateString) => onChangeFilters(dateString, "dates")} />
             {/* <Button onClick={callChildMethod}>Export CSV</Button> */}
-            {/* <Button onClick={refreshTable}>
+            <Button onClick={refreshData}>
               <SyncOutlined />
-            </Button> */}
+            </Button>
+            <Switch checkedChildren="light" unCheckedChildren="dark" defaultChecked onChange={changeMode}/>
           </Space>
         </div>
       </div>
       <div className={
-         "ag-theme-quartz-dark"
+         mode === "light"? "ag-theme-quartz": "ag-theme-quartz-dark"
         }
         style={{ height: "80vh", marginTop: "1em" }}>
 
       {loader?
        <Spin size="large" style={{height: "40vh", marginTop: "1em" ,display: "flex", justifyContent: "center", alignItems: "center"}}/>
       :<AgGridReact
-            // ref={gridRef}
-            // onGridReady={onGridReady}
             rowData={data}
-            columnDefs={columnDefs}
-            // domLayout='autoHeight'
-            // groupDisplayType="singleColumn"
+            columnDefs={filters.reportType === "LIVE" ?columnDefsLiveReport:columnDefsUserReport}
             autoGroupColumnDef={autoGroupColumnDef}
             suppressAggFuncInHeader={true}
-            groupIncludeFooter={true}
+            // groupIncludeFooter={true}
             groupIncludeTotalFooter={true}
             pinnedBottomRowData={pinnedBottomRowData}
             animateRows={true}
             gridOptions={gridOptions}
-            // defaultColDef={defaultColDef}
-            // getRowStyle={getRowStyle}
-            // getGroupRowAgg={getGroupRowAgg}
-            // getMainMenuItems={getMainMenuItems}
-            // enableRangeSelection={true}
-            // pinnedBottomRowData={pinnedBottomRowData}
-            // getContextMenuItems={getContextMenuItems}
           />}
           </div>
    </div>
