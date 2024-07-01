@@ -189,7 +189,7 @@ export const columnDefsLiveReport = [
 
   export const columnDefsMiscReport = [
     
-    { headerName: "Campaign ID", field: "campaignId", sortable: true, filter: true,  width: 200,enableRowGroup: true,flex: 1},
+    { headerName: "Campaign ID", field: "campaignId", sortable: true, filter: true,rowGroup: true,  width: 200,enableRowGroup: true,flex: 1},
     { headerName: "Adset ID", field: "adsetId", sortable: true, filter: true,  width: 200,enableRowGroup: true,flex: 1},
     { headerName: "Hour", field: "convertedHour", sortable: true, filter: true, width: 80, enableRowGroup: true,flex: 1},
     { headerName: "Revenue", field: "revenue", sortable: true, filter: true, width: 110, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2)),flex: 1},
