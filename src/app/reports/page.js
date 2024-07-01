@@ -12,7 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   SyncOutlined
 } from '@ant-design/icons';
-import { autoGroupColumnDef, columnDefsLiveReport, columnDefsUserReport, gridOptions } from "./constants";
+import { autoGroupColumnDef, columnDefsLiveReport, columnDefsMiscReport, columnDefsUserReport, gridOptions } from "./constants";
 
 function Reports() {
 // console.log("states", columnDefs,autoGroupColumnDef)
@@ -124,7 +124,10 @@ function Reports() {
     }
   ]);
   const [reportType, setReportType] = useState([
-
+    {
+      "label": "MISC",
+      "value": "MISC"
+    },
     {
       "label": "LIVE",
       "value": "LIVE"
@@ -334,7 +337,8 @@ function Reports() {
        <Spin size="large" style={{height: "40vh", marginTop: "1em" ,display: "flex", justifyContent: "center", alignItems: "center"}}/>
       :<AgGridReact
             rowData={data}
-            columnDefs={filters.reportType === "LIVE" ?columnDefsLiveReport:columnDefsUserReport}
+            // columnDefs={filters.reportType === "LIVE" ?columnDefsLiveReport:columnDefsUserReport}
+            columnDefs={filters.reportType === "LIVE" ?columnDefsLiveReport:filters.reportType === "USER"?columnDefsUserReport:columnDefsMiscReport}
             autoGroupColumnDef={autoGroupColumnDef}
             suppressAggFuncInHeader={true}
             // groupIncludeFooter={true}
