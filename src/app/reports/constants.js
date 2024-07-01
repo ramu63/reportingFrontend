@@ -187,4 +187,16 @@ export const columnDefsLiveReport = [
 
   ];
 
+  export const columnDefsMiscReport = [
+    
+    { headerName: "Campaign ID", field: "campaignId", sortable: true, filter: true,  width: 200,enableRowGroup: true,flex: 1},
+    { headerName: "Adset ID", field: "adsetId", sortable: true, filter: true,  width: 200,enableRowGroup: true,flex: 1},
+    { headerName: "Hour", field: "convertedHour", sortable: true, filter: true, width: 80, enableRowGroup: true,flex: 1},
+    { headerName: "Revenue", field: "revenue", sortable: true, filter: true, width: 110, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2)),flex: 1},
+    { headerName: "Impressions", field: "impressions", sortable: true, filter: true, width: 130, aggFunc: spender,flex: 1},
+    { headerName: "Conversions", field: "conversions", sortable: true, filter: true,width: 130,aggFunc: spender,flex: 1},
+    { headerName: "Date", field: "convertedDate", sortable: true, filter: true, enableRowGroup: true,flex: 1}
+
+  ];
+
   
