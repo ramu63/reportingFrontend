@@ -72,6 +72,54 @@ if (params.node.aggData) {
 
 };
 
+const cplRevenueFormula = (params) => {
+  const calculateCPL = (spend, conversions) => {
+    let cpl = conversions !== 0 ? spend / conversions : 0;
+    if (!isFinite(cpl) || isNaN(cpl)) {
+      cpl = 0;
+    }
+    const cplStr = cpl.toFixed(2);
+    const [intPart, decPart] = cplStr.split(".");
+    return decPart === "00" ? intPart : cplStr;
+  };
+  
+  if (params.data) {
+    const spend = params.data.spend || 0;
+    const conversions = params.data.conversions || 0;
+    return calculateCPL(spend, conversions);
+  }
+  
+  if (params.node.aggData) {
+    const { spend, conversions } = params.node.aggData;
+    return calculateCPL(spend, conversions);
+  }
+  
+  };
+
+  const ctrFormula = (params) => {
+    const calculateCTR = (conversions, impressions_revenue) => {
+      let ctr = impressions_revenue !== 0 ? conversions / impressions_revenue : 0;
+      if (!isFinite(ctr) || isNaN(ctr)) {
+        ctr = 0;
+      }
+      const cplStr = ctr.toFixed(2);
+      const [intPart, decPart] = cplStr.split(".");
+      return decPart === "00" ? intPart : cplStr;
+    };
+    
+    if (params.data) {
+      const conversions = params.data.conversions || 0;
+      const impressions_revenue = params.data.impressions_revenue || 0;
+      return calculateCTR(conversions, impressions_revenue);
+    }
+    
+    if (params.node.aggData) {
+      const { conversions, impressions_revenue } = params.node.aggData;
+      return calculateCTR(conversions, impressions_revenue);
+    }
+    
+    };
+
 const cpcFormula = (params) => {
 const calculateCPC = (spend, clicks) => {
   let cpc = clicks !== 0 ? spend / clicks : 0;
@@ -153,8 +201,11 @@ export const columnDefsLiveReport = [
     { headerName: "Impressions", field: "impressions", sortable: true, filter: true, width: 130, aggFunc: spender},
     { headerName: "Clicks", field: "clicks", sortable: true, filter: true, width: 90, aggFunc: spender},
     { headerName: "Leads", field: "leads", sortable: true, filter: true, width: 90, aggFunc: spender},
+    { headerName: "Impressions_Rev", field: "impressions_revenue", sortable: true, hide: true,filter: true, width: 220, aggFunc: spender},    
     { headerName: "Conversions", field: "conversions", sortable: true, filter: true,width: 130,aggFunc: spender},
     { headerName: "CPL", field: "cpl", sortable: true, filter: true, width: 90, valueGetter:cplFormula},
+    { headerName: "CPL_REV", field: "cpl_rev", sortable: true, filter: true, width: 110, valueGetter:cplRevenueFormula},
+    { headerName: "CTR", field: "ctr", sortable: true, filter: true, width: 110, valueGetter:ctrFormula},
     { headerName: "CPC", field: "cpc", sortable: true, filter: true, width: 90, valueGetter:cpcFormula},
     { headerName: "RPC", field: "rpc", sortable: true, filter: true, width: 90, valueGetter:rpcFormula},
     { headerName: "Date", field: "convertedDate", sortable: true, filter: true, enableRowGroup: true}
@@ -179,8 +230,11 @@ export const columnDefsLiveReport = [
     { headerName: "Impressions", field: "impressions", sortable: true, filter: true, width: 130, aggFunc: spender},
     { headerName: "Clicks", field: "clicks", sortable: true, filter: true, width: 90, aggFunc: spender},
     { headerName: "Leads", field: "leads", sortable: true, filter: true, width: 90, aggFunc: spender},
+    { headerName: "Impressions_Rev", field: "impressions_revenue", sortable: true, hide: true,filter: true, width: 220, aggFunc: spender},
     { headerName: "Conversions", field: "conversions", sortable: true, filter: true,width: 130,aggFunc: spender},
     { headerName: "CPL", field: "cpl", sortable: true, filter: true, width: 90, valueGetter:cplFormula},
+    { headerName: "CPL_REV", field: "cpl_rev", sortable: true, filter: true, width: 110, valueGetter:cplRevenueFormula},
+    { headerName: "CTR", field: "ctr", sortable: true, filter: true, width: 110, valueGetter:ctrFormula},    
     { headerName: "CPC", field: "cpc", sortable: true, filter: true, width: 90, valueGetter:cpcFormula},
     { headerName: "RPC", field: "rpc", sortable: true, filter: true, width: 90, valueGetter:rpcFormula},
     // { headerName: "Date", field: "convertedDate", sortable: true, filter: true, enableRowGroup: true}
@@ -193,7 +247,7 @@ export const columnDefsLiveReport = [
     { headerName: "Adset ID", field: "adsetId", sortable: true, filter: true,  width: 200,enableRowGroup: true,flex: 1},
     { headerName: "Hour", field: "convertedHour", sortable: true, filter: true, width: 80, enableRowGroup: true,flex: 1},
     { headerName: "Revenue", field: "revenue", sortable: true, filter: true, width: 110, aggFunc: spender, valueFormatter:(params) => (Number(params.value).toFixed(2)),flex: 1},
-    { headerName: "Impressions", field: "impressions", sortable: true, filter: true, width: 130, aggFunc: spender,flex: 1},
+    { headerName: "Impressions", field: "impressions", sortable: true,filter: true, width: 220, aggFunc: spender},
     { headerName: "Conversions", field: "conversions", sortable: true, filter: true,width: 130,aggFunc: spender,flex: 1},
     { headerName: "Date", field: "convertedDate", sortable: true, filter: true, enableRowGroup: true,flex: 1}
 
